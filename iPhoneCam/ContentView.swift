@@ -240,3 +240,4 @@ final class PreviewUIView: UIView {
         return layer as! AVCaptureVideoPreviewLayer
     }
 }
+

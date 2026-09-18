@@ -238,3 +238,4 @@ extension CameraManager: AVCaptureVideoDataOutputSampleBufferDelegate {
         onFrameCaptured?(jpegData)
     }
 }
+
