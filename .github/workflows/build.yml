@@ -17,6 +17,20 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Select Xcode Version
+        run: |
+          # Use Xcode 16 if installed on runner, otherwise fallback gracefully
+          if [ -d "/Applications/Xcode_16.2.app" ]; then
+            sudo xcode-select -s /Applications/Xcode_16.2.app/Contents/Developer
+          elif [ -d "/Applications/Xcode_16.1.app" ]; then
+            sudo xcode-select -s /Applications/Xcode_16.1.app/Contents/Developer
+          elif [ -d "/Applications/Xcode_16.0.app" ]; then
+            sudo xcode-select -s /Applications/Xcode_16.0.app/Contents/Developer
+          elif [ -d "/Applications/Xcode_16.app" ]; then
+            sudo xcode-select -s /Applications/Xcode_16.app/Contents/Developer
+          fi
+          xcodebuild -version
+
       - name: Install xcodegen
         run: |
           brew install xcodegen
@@ -24,6 +38,13 @@ jobs:
       - name: Generate Xcode Project
         run: |
           xcodegen generate
+
+      - name: Fix Xcode Project Format Compatibility
+        run: |
+          # Lower objectVersion from 77 (Xcode 16+) to 56 (Xcode 14/15/16 compatible)
+          sed -i '' -E 's/objectVersion = [0-9]+;/objectVersion = 56;/g' iPhoneCam.xcodeproj/project.pbxproj
+          echo "Patched project.pbxproj objectVersion to 56 for universal compatibility."
+          grep "objectVersion" iPhoneCam.xcodeproj/project.pbxproj
 
       - name: Build Archive (No Code Signing for TrollStore)
         run: |
@@ -58,4 +79,3 @@ jobs:
           files: iPhoneCam.ipa
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
